@@ -1,0 +1,28 @@
+# render.yaml
+services:
+  # The Web Service (Your Django App)
+  - type: web
+    name: makerspace-queue
+    env: python
+    buildCommand: "pip install -r requirements.txt && python manage.py collectstatic --no-input"
+    startCommand: "gunicorn queue_project.wsgi:application"
+    plan: free
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: makerspace-db 
+          property: connectionString
+      - key: SECRET_KEY
+        generateValue: true
+      - key: ALLOWED_HOSTS
+        value: .render.com,localhost,127.0.0.1
+      - key: DEBUG
+        value: 'False'
+  
+  # The Database
+  - type: pserv
+    name: makerspace-db 
+    plan: free
+    disk:
+      name: makerspace-data
+      sizeGB: 1
